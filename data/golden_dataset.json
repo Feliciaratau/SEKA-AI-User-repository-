@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "description": "Seka.ai golden dataset — curated indigenous South African language idioms used to prime the cultural translation engine via few-shot prompting, and to populate quick-select examples in the demo interface.",
+    "verification_status": "DRAFT — sourced from publicly documented African proverb/idiom references during prototype build. Each entry should be reviewed by a fluent speaker or linguist before being presented as authoritative. This is flagged deliberately: Seka.ai's own design principle is that AI-generated cultural claims must be marked provisional until community-verified — the same standard applies to this seed dataset.",
+    "last_updated": "2026-06-17"
+  },
+  "idioms": [
+    {
+      "id": "xh-001",
+      "language": "isiXhosa",
+      "phrase": "Ukhuni ludala luza nentshulube",
+      "literal_translation": "Old wood brings worms",
+      "idiomatic_intent": "Old age arrives together with its infirmities and burdens.",
+      "cultural_provenance": "Used by elders, often self-referentially and with wry acceptance rather than complaint, to acknowledge the physical decline that comes with ageing as a natural, expected part of life rather than a misfortune to resist.",
+      "community_note": "Regional variation in wording may exist; verify phrasing with isiXhosa-speaking reviewers before treating as canonical.",
+      "google_translate_failure_example": "A literal engine renders this as a statement about timber and insects, with no indication an idiom is present at all."
+    },
+    {
+      "id": "ns-001",
+      "language": "Sepedi (Northern Sotho)",
+      "phrase": "Kgomo e bolawa ke molapo",
+      "literal_translation": "A cow is killed by the river",
+      "idiomatic_intent": "A person can be undone by the very thing that sustains or benefits them — a caution against complacency around one's source of security.",
+      "cultural_provenance": "Rooted in pastoral life where rivers are essential for cattle survival yet also carry risk of drowning or disease; used as a broader life caution in contexts of overreliance or carelessness around a dependable resource or relationship.",
+      "community_note": "Sourced from general Sepedi proverb references; recommend confirming exact phrasing and regional usage with a Sepedi-speaking reviewer.",
+      "google_translate_failure_example": "A literal engine renders this as a factual statement about livestock and geography, losing the cautionary, metaphorical register entirely."
+    },
+    {
+      "id": "zu-001",
+      "language": "isiZulu",
+      "phrase": "Izandla ziyagezana",
+      "literal_translation": "Hands wash each other",
+      "idiomatic_intent": "People depend on and support one another; mutual aid and reciprocity are necessary for a community to function.",
+      "cultural_provenance": "A direct articulation of Ubuntu — the philosophy that one's humanity is bound up in relationship with others. Commonly invoked when asking for or acknowledging help, or describing healthy collaborative relationships.",
+      "community_note": "Widely cited across isiZulu proverb collections; lower verification risk than other entries but still recommend a native-speaker sense-check on connotation in specific contexts.",
+      "google_translate_failure_example": "A literal engine returns an oddly literal claim about hand hygiene, with no connection to Ubuntu or mutual obligation."
+    },
+    {
+      "id": "ts-001",
+      "language": "Setswana",
+      "phrase": "Noga e bolaya ka selo se e se itseng",
+      "literal_translation": "A snake kills with what it knows",
+      "idiomatic_intent": "A person succeeds or causes harm using whatever skill, resource, or weapon is most familiar to them — often used to explain why someone's particular method or trick worked.",
+      "cultural_provenance": "Drawn from observation of natural behaviour as a teaching device, common across Southern African oral traditions, where animal behaviour is used to comment on human strategy and character.",
+      "community_note": "Lower confidence entry — phrasing and translation should be specifically confirmed with a Setswana-speaking reviewer before public use.",
+      "google_translate_failure_example": "A literal engine returns a factual statement about snake behaviour without any indication that it's commenting on human strategy."
+    },
+    {
+      "id": "ve-001",
+      "language": "Tshivenda",
+      "phrase": "Mbudzi i lapfa nga muya",
+      "literal_translation": "A goat gets full by way of the rope",
+      "idiomatic_intent": "Patience and steady, repeated small effort over time lead to sufficiency — one does not need a sudden abundance to be satisfied.",
+      "cultural_provenance": "Reflects an agrarian and herding worldview where a tethered goat grazes steadily and patiently within reach, used to encourage patience and contentment with gradual progress.",
+      "community_note": "Lowest-confidence entry in this set — included to represent language diversity, but phrasing must be verified with a Tshivenda-speaking reviewer before use in any public-facing demo claim.",
+      "google_translate_failure_example": "A literal engine returns a confusing statement about goats and rope with no discernible meaning to an English reader."
+    }
+  ]
+}

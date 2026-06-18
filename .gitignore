@@ -1,0 +1,17 @@
+venv311/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.env.*
+.venv
+venv/
+ENV/
+env/
+build/
+dist/
+.eggs/
+*.egg-info/
+.python-version
