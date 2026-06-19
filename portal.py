@@ -2,6 +2,25 @@ import streamlit as st
 from seka_engine.engine import translate
 import requests
 import os
+import json
+import anthropic
+
+# 1. INITIALIZE THE SHARED VERIFIED DATABASE
+DB_FILE = "seka_database.json"
+verified_database = {}
+
+if os.path.exists(DB_FILE):
+    try:
+        with open(DB_FILE, "r") as f:
+            verified_database = json.load(f)
+    except Exception:
+        st.error("Could not read database file. Reverting to empty cache.")
+
+# 2. ANTHROPIC CLIENT SETUP
+try:
+    client = anthropic.Anthropic()
+except Exception:
+    client = None
 
 st.set_page_config(page_title="Seka.ai Portal | Knowledge Hub", page_icon="🌍", layout="centered")
 
@@ -75,54 +94,84 @@ if st.button("Translate with Seka.ai", type="primary", use_container_width=True)
         st.warning("Please enter a phrase before translating.")
     else:
         with st.spinner("Seka.ai is interpreting your phrase..."):
-                result = None
-                # Try central backend first (if selected)
-                if use_central and central_backend_url:
+            lookup_key = phrase.strip().lower()
+            
+            # CHOICE A: The phrase is already verified in our Data Trust file!
+            if lookup_key in verified_database:
+                data = verified_database[lookup_key]
+                st.success(f"✨ Match Verified in Community Data Trust — Language: {data['language']}")
+                
+                st.markdown(f"""
+                    <div style="background-color: #f8f9fa; border-left: 5px solid #6c757d; padding: 15px; margin-bottom: 15px; border-radius: 8px; color: #333;">
+                        <strong>📝 Literal Translation:</strong><br><i>{data.get('literal', 'N/A')}</i>
+                    </div>
+                    <div style="background-color: #e8f5e9; border-left: 5px solid #2e7d32; padding: 15px; margin-bottom: 15px; border-radius: 8px; color: #333;">
+                        <strong>💡 Idiomatic Meaning:</strong><br><b>{data.get('idiomatic', 'N/A')}</b>
+                    </div>
+                    <div style="background-color: #fff8e1; border-left: 5px solid #f57f17; padding: 15px; border-radius: 8px; color: #333;">
+                        <strong>🌍 Cultural Context:</strong><br>{data.get('context', 'N/A')}<br>
+                        <small style="color: #666;">Source: {data.get('source', 'Community Verified')}</small>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+            # CHOICE B: The phrase is entirely new. Run it through the LLM with strict rules.
+            else:
+                if not client:
+                    st.error("API client not configured. Please ensure your Anthropic API key is set up.")
+                else:
+                    st.info("🔍 Phrase not in local trust cache. Querying live engine with strict cultural guardrails...")
+                    
+                    system_prompt = (
+                        "You are an expert South African linguist and cultural historian specializing in Nguni and Sotho-Tswana languages. "
+                        "Your job is to analyze the input phrase and break it down into three tiers. "
+                        "CRITICAL: Be extremely precise about language detection. For example, 'Izandla ziyagezana' is strictly isiZulu, not isiXhosa. "
+                        "You must return your answer STRICTLY as a raw JSON object. Do not include markdown formatting like ```json, do not include introductory text. "
+                        "Use these exact JSON keys: \n"
+                        "{\n"
+                        '  "language": "Detected Language (e.g., isiZulu, Sepedi, etc.)",\n'
+                        '  "literal": "The precise word-for-word translation into English",\n'
+                        '  "idiomatic": "The deeper metaphorical or figurative meaning",\n'
+                        '  "context": "The historical context, philosophical roots, or societal usage of the phrase"\n'
+                        "}"
+                    )
+                    
                     try:
-                        resp = requests.post(
-                            central_backend_url.rstrip("/") + "/api/translate",
-                            json={
-                                "phrase": phrase.strip(),
-                                "language_hint": None,
-                            },
-                            timeout=15,
+                        message = client.messages.create(
+                            model="claude-3-5-sonnet-20241022",
+                            max_tokens=1000,
+                            system=system_prompt,
+                            messages=[{"role": "user", "content": f"Analyze this phrase: {phrase.strip()}"}]
                         )
-                        if resp.status_code == 200:
-                            raw = resp.json()
-                            # normalize into an object-like simple namespace
-                            class R: pass
-                            result = R()
-                            result.literal_translation = raw.get("literal_translation")
-                            result.idiomatic_intent = raw.get("idiomatic_intent")
-                            result.cultural_provenance = raw.get("cultural_provenance")
-                            result.community_note = raw.get("community_note")
-                            result.source_language = raw.get("source_language")
-                            result.source_phrase = raw.get("source_phrase")
-                        else:
-                            st.warning(f"Central backend returned {resp.status_code}: {resp.text[:200]}")
+                        
+                        raw_text = message.content[0].text.strip()
+                        
+                        # Strip any markdown backticks if Claude added them anyway
+                        if raw_text.startswith("```json"):
+                            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+                        elif raw_text.startswith("```"):
+                            raw_text = raw_text.replace("```", "").strip()
+                        
+                        ai_data = json.loads(raw_text)
+                        
+                        st.success(f"✨ Live Engine Detection — Language: {ai_data.get('language')}")
+                        
+                        st.markdown(f"""
+                            <div style="background-color: #f8f9fa; border-left: 5px solid #6c757d; padding: 15px; margin-bottom: 15px; border-radius: 8px; color: #333;">
+                                <strong>📝 Literal Translation:</strong><br><i>{ai_data.get('literal', 'N/A')}</i>
+                            </div>
+                            <div style="background-color: #e8f5e9; border-left: 5px solid #2e7d32; padding: 15px; margin-bottom: 15px; border-radius: 8px; color: #333;">
+                                <strong>💡 Idiomatic Meaning:</strong><br><b>{ai_data.get('idiomatic', 'N/A')}</b>
+                            </div>
+                            <div style="background-color: #fff8e1; border-left: 5px solid #f57f17; padding: 15px; border-radius: 8px; color: #333;">
+                                <strong>🌍 Cultural Context:</strong><br>{ai_data.get('context', 'N/A')}<br>
+                                <small style="color: #d32f2f;">⚠️ <i>Unverified AI draft. Sent to the Lekgotla Review queue for guardian authentication.</i></small>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                    except json.JSONDecodeError:
+                        st.error("💥 System Error: The engine returned an unstructured block. Please try again.")
                     except Exception as e:
-                        st.info(f"Central backend call failed: {e}")
-
-                # Fallback to local engine if central not used or failed
-                if not result:
-                    try:
-                        provider = "anthropic"
-                        # engine will read environment variables for keys on the host
-                        result = translate(
-                            phrase=phrase.strip(),
-                            provider=provider,
-                            api_key=None,
-                        )
-                    except Exception as e:
-                        st.error(f"Unable to translate this phrase right now: {e}")
-                        result = None
-
-        if result:
-            st.markdown(f"<div class='tier-card literal'><div class='tier-label'>📝 Literal translation</div><div>{result.literal_translation}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='tier-card idiomatic'><div class='tier-label'>💡 Idiomatic meaning</div><div>{result.idiomatic_intent}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='tier-card cultural'><div class='tier-label'>🌍 Cultural context</div><div>{result.cultural_provenance}</div></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='note-box'><strong>Insight:</strong> {result.community_note}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='footer-note'>Source language detected: {result.source_language}.</div>", unsafe_allow_html=True)
+                        st.error(f"🔗 API Connection Error: {str(e)}")
 
 st.markdown("---")
 st.markdown("<div class='footer-note'>The existing deployed Seka.ai backend remains unchanged. This portal is a separate, user-friendly interface for exploring cultural meaning.</div>", unsafe_allow_html=True)
