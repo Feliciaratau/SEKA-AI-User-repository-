@@ -1,3 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Mac
+.DS_Store
 venv311/
 __pycache__/
 *.pyc
